@@ -751,6 +751,7 @@ public enum ToastPosition {
     case top
     case center
     case bottom
+    case bottomOf(UIView?)
     
     fileprivate func centerPoint(forToast toast: UIView, inSuperview superview: UIView) -> CGPoint {
         let topPadding: CGFloat = ToastManager.shared.style.verticalPadding + superview.csSafeAreaInsets.top
@@ -763,6 +764,15 @@ public enum ToastPosition {
             return CGPoint(x: superview.bounds.size.width / 2.0, y: superview.bounds.size.height / 2.0)
         case .bottom:
             return CGPoint(x: superview.bounds.size.width / 2.0, y: (superview.bounds.size.height - (toast.frame.size.height / 2.0)) - bottomPadding)
+        case .bottomOf(let view):
+            guard let view = view else {
+                return ToastPosition.bottom.centerPoint(forToast: toast, inSuperview: superview)
+            }
+            let frame = view.superview?.convert(view.frame, to: superview)
+            let maxY = (frame?.maxY ?? superview.bounds.size.height)
+            let desiredY = maxY - (toast.frame.size.height / 2.0)
+            let paddedY = min(desiredY, superview.bounds.maxY - bottomPadding)
+            return CGPoint(x: superview.bounds.size.width / 2.0, y: paddedY)
         }
     }
 }
